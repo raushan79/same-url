@@ -10,77 +10,75 @@ import apiLimiter from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
+// Home page route
+router.get("/", (req, res) => {
+  res.render("index", {
+    title: "SameURL - URL Shortener",
+    message: req.query.message,
+    shortUrl: req.query.shortUrl,
+  });
+});
+
+// URL shortening routes
 router
   .route("/shorten")
-  .all(apiLimiter)
-  .get(validateUrlShortening, async (req, res, next) => {
-    const { url } = req.body;
-    const existingUrl = await Url.findOne({ original_url: url });
-    if (existingUrl) {
-      console.info(`Existing URL found: ${existingUrl}`);
-      res.status(200).json({
-        status: "success",
-        message: "Short URL found",
-        short_url: existingUrl.short_url,
-      });
-    } else {
-      console.info("No existing URL found for the provided original URL.");
-      res.status(404).json({
-        status: "error",
-        message: "Short URL not found for the provided original URL",
-      });
+  .get(async (req, res) => {
+    try {
+      const { url } = req.query;
+      const existingUrl = await Url.findOne({ original_url: url });
+
+      if (existingUrl) {
+        res.redirect(
+          "/?message=URL already exists&shortUrl=" + existingUrl.short_url
+        );
+      } else {
+        res.redirect("/?message=URL not found");
+      }
+    } catch (error) {
+      console.error("Error checking URL:", error);
+      res.redirect("/?message=Error checking URL");
     }
   })
-  .post(validateUrlShortening, async (req, res) => {
+  .post(async (req, res) => {
     try {
       const { url } = req.body;
 
-      // Sanitize the URL
+      // Sanitize and validate URL
       const sanitizedUrl = sanitizeUrl(url);
 
-      // Check for suspicious URLs
       if (isSuspiciousUrl(sanitizedUrl)) {
-        return res.status(400).json({
-          status: "error",
-          message: "URL appears to be suspicious or potentially harmful",
-        });
+        return res.redirect("/?message=URL appears to be suspicious");
       }
 
-      // Check if the URL already exists
+      // Check if URL already exists
       const existingUrl = await Url.findOne({ original_url: sanitizedUrl });
       if (existingUrl) {
-        return res.status(200).json({
-          status: "success",
-          message: "Short URL already exists",
-          original_url: existingUrl.original_url,
-          short_url: existingUrl.short_url,
-        });
+        return res.redirect(
+          "/?message=URL already exists&shortUrl=" + existingUrl.short_url
+        );
       }
 
+      // Create new short URL
       const shortUrlId = getRandomShortId();
       const shortUrl = `${process.env.BASE_URL}/${shortUrlId}`;
+
       const urlModel = new Url({
         original_url: sanitizedUrl,
         short_url: shortUrl,
       });
-      const saveUrl = await urlModel.save();
-      const resObj = {
-        status: "success",
-        message: "Short url created",
-        original_url: saveUrl.original_url,
-        short_url: saveUrl.short_url,
-      };
-      res.send(resObj);
+
+      await urlModel.save();
+      res.redirect(
+        "/?message=Short URL created successfully&shortUrl=" + shortUrl
+      );
     } catch (error) {
-      console.error("Error occurred while creating short URL:", error);
-      res.status(500).json({
-        status: "error",
-        message: "An unexpected error occurred. Please try again later.",
-      });
+      console.error("Error creating short URL:", error);
+      res.redirect("/?message=Error creating short URL");
     }
   });
 
-router.get("/:urlId", apiLimiter, async (req, res, next) => {
+// Redirect to original URL
+router.get("/:urlId", async (req, res) => {
   try {
     const { urlId } = req.params;
     const url = `${process.env.BASE_URL}/${urlId}`;
@@ -89,17 +87,11 @@ router.get("/:urlId", apiLimiter, async (req, res, next) => {
     if (existingUrl) {
       return res.redirect(existingUrl.original_url);
     } else {
-      return res.status(404).json({
-        status: "error",
-        message: "Short URL not found",
-      });
+      return res.redirect("/?message=Short URL not found");
     }
   } catch (error) {
-    console.error("Error occurred while retrieving short URL:", error);
-    return res.status(500).json({
-      status: "error",
-      message: "An unexpected error occurred. Please try again later.",
-    });
+    console.error("Error redirecting to URL:", error);
+    return res.redirect("/?message=Error redirecting to URL");
   }
 });
 
