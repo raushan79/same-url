@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <nav>
+      <div class="nav-container">
+        <div class="logo">
+          <a href="/">SameURL</a>
+        </div>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#benefits">Benefits</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main>
+      <section id="hero">
+        <h1>Free URL Shortener for Everyone</h1>
+        <p>
+          Transform your long URLs into short, memorable links in seconds - No
+          signup required!
+        </p>
+
+        <div class="url-shortener">
+          <form action="/shorten" method="POST">
+            <div class="input-group">
+              <input
+                type="url"
+                id="url"
+                name="url"
+                placeholder="Paste your long URL here..."
+                required
+              />
+              <button type="submit">Shorten URL</button>
+            </div>
+          </form>
+
+          <% if (locals.message) { %>
+          <div class="message <%= locals.shortUrl ? 'success' : 'error' %>">
+            <%= message %>
+          </div>
+          <% } %> <% if (locals.shortUrl) { %>
+          <div class="result">
+            <div class="short-url">
+              <input type="text" value="<%= shortUrl %>" readonly />
+              <button onclick="copyToClipboard(this)" class="copy-btn">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+          </div>
+          <% } %>
+        </div>
+      </section>
+
+      <section id="how-it-works">
+        <h2>How It Works</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <i class="fas fa-paste"></i>
+            <h3>1. Paste URL</h3>
+            <p>Copy your long URL and paste it in the input field above</p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-compress-alt"></i>
+            <h3>2. Shorten</h3>
+            <p>
+              Click the Shorten URL button to generate your short link instantly
+            </p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-share-alt"></i>
+            <h3>3. Share</h3>
+            <p>Copy your shortened URL and share it anywhere you want</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="benefits">
+        <h2>Why Use SameURL?</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <i class="fas fa-bolt"></i>
+            <h3>Fast & Free</h3>
+            <p>No registration required. Shorten URLs instantly at zero cost</p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-link"></i>
+            <h3>Reliable Links</h3>
+            <p>Your shortened URLs never expire and work everywhere</p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Secure & Safe</h3>
+            <p>All URLs are checked for safety and malicious content</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#benefits">Benefits</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Connect With Us</h4>
+          <div class="social-links">
+            <a
+              href="https://www.linkedin.com/in/raushan77/"
+              target="_blank"
+              aria-label="LinkedIn"
+              class="linkedin"
+            >
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a
+              href="https://wa.me/919122102491"
+              target="_blank"
+              aria-label="WhatsApp"
+              class="whatsapp"
+            >
+              <i class="fab fa-whatsapp"></i>
+            </a>
+          </div>
+          <p class="connect-text">
+            Have suggestions or questions?<br />Feel free to reach out!
+          </p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-info">
+          <p>
+            &copy;
+            <script>
+              document.write(new Date().getFullYear());
+            </script>
+            SameURL. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      function copyToClipboard(button) {
+        const input = button.parentElement.querySelector("input");
+        input.select();
+        document.execCommand("copy");
+
+        const icon = button.querySelector("i");
+        icon.className = "fas fa-check";
+        setTimeout(() => {
+          icon.className = "fas fa-copy";
+        }, 2000);
+      }
+    </script>
+  </body>
+</html>

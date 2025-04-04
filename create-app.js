@@ -10,6 +10,12 @@ const createApp = async () => {
   const app = express();
   app.use(cors());
 
+  // Set EJS as the template engine
+  app.set("view engine", "ejs");
+
+  // Serve static files from the 'public' directory
+  app.use(express.static("public"));
+
   // Database connection
   await getMongoDBConnection();
 
@@ -22,6 +28,7 @@ const createApp = async () => {
     )
   );
 
+  // Routes
   app.use("/", sameUrlRouter);
 
   app.listen(process.env.PORT || 7211, () => {
